@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Menu, X, Phone, UtensilsCrossed, ArrowLeft } from 'lucide-react';
 
 interface NavbarProps {
-  currentPage: 'home' | 'gallery' | 'service-detail';
+  currentPage: 'home' | 'gallery' | 'service-detail' | 'blogs';
   onNavigate: (page: 'home' | 'gallery' | 'service-detail') => void;
 }
 
@@ -38,7 +38,8 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
     { name: 'Services', href: '#services', action: () => handleNavClick('#services') },
     { name: 'Equipments', href: '#equipments', action: () => handleNavClick('#equipments') },
     { name: 'About', href: '#about', action: () => handleNavClick('#about') },
-    { name: 'Gallery', href: '#gallery', action: () => handleNavClick('#', 'gallery') },
+    { name: 'Blogs', href: '#blogs', action: () => handleNavClick('#blogs') },
+    { name: 'Gallery', href: '#', action: () => handleNavClick('#', 'gallery') },
     { name: 'Contact', href: '#contact', action: () => handleNavClick('#contact') },
   ];
 

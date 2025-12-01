@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { ArrowRight, ShoppingBag, ChevronLeft, ChevronRight, X, Phone, MessageSquare, Send } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { ArrowRight, ShoppingBag, ChevronLeft, ChevronRight, X, Phone, MessageSquare, Send, Heart } from 'lucide-react';
 
 // Base Templates for generating dummy data
 const baseTemplates = [
@@ -76,13 +76,56 @@ const Equipments: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Wishlist State
+  const [wishlist, setWishlist] = useState<number[]>([]);
+  const [showWishlistOnly, setShowWishlistOnly] = useState(false);
+
+  // Load wishlist from local storage on mount
+  useEffect(() => {
+    const savedWishlist = localStorage.getItem('catertech_wishlist');
+    if (savedWishlist) {
+      try {
+        setWishlist(JSON.parse(savedWishlist));
+      } catch (e) {
+        console.error("Failed to parse wishlist", e);
+      }
+    }
+  }, []);
+
+  // Simulate data fetching
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const toggleWishlist = (e: React.MouseEvent, id: number) => {
+    e.stopPropagation(); // Prevent card click
+    let newWishlist;
+    if (wishlist.includes(id)) {
+      newWishlist = wishlist.filter(itemId => itemId !== id);
+    } else {
+      newWishlist = [...wishlist, id];
+    }
+    setWishlist(newWishlist);
+    localStorage.setItem('catertech_wishlist', JSON.stringify(newWishlist));
+  };
 
   // Filter Logic
   const filteredItems = useMemo(() => {
-    return activeCategory === 'All' 
-      ? equipmentList 
-      : equipmentList.filter(item => item.category === activeCategory);
-  }, [activeCategory]);
+    let items = equipmentList;
+    
+    if (showWishlistOnly) {
+      items = items.filter(item => wishlist.includes(item.id));
+    } else if (activeCategory !== 'All') {
+      items = items.filter(item => item.category === activeCategory);
+    }
+    
+    return items;
+  }, [activeCategory, showWishlistOnly, wishlist]);
 
   // Pagination Logic
   const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
@@ -93,7 +136,15 @@ const Equipments: React.FC = () => {
 
   const handleCategoryChange = (cat: string) => {
     setActiveCategory(cat);
-    setCurrentPage(1); // Reset to first page on category change
+    setShowWishlistOnly(false);
+    setCurrentPage(1); 
+  };
+
+  const handleWishlistToggleView = () => {
+    setShowWishlistOnly(!showWishlistOnly);
+    setCurrentPage(1);
+    // Reset category to All visually when switching to wishlist, though logic handles it
+    if (!showWishlistOnly) setActiveCategory('All');
   };
 
   const handleNextPage = () => {
@@ -132,89 +183,164 @@ const Equipments: React.FC = () => {
           </p>
         </div>
 
-        {/* Categories Tab */}
-        <div className="flex justify-center mb-12">
-            <div className="inline-flex flex-wrap justify-center gap-2 p-1 bg-white border border-slate-200 rounded-full shadow-sm">
-                {categories.map(cat => (
-                    <button
-                        key={cat}
-                        onClick={() => handleCategoryChange(cat)}
-                        className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
-                            activeCategory === cat 
-                                ? 'bg-cater-blue text-white shadow-md' 
-                                : 'text-slate-500 hover:text-cater-blue hover:bg-slate-50'
-                        }`}
-                    >
-                        {cat}
-                    </button>
-                ))}
-            </div>
+        {/* Categories Tab & Wishlist Button */}
+        <div className="flex flex-col md:flex-row justify-center items-center gap-6 mb-12">
+            
+            {/* Wishlist Button - Mobile First or Side */}
+            <button
+              onClick={handleWishlistToggleView}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 border ${
+                showWishlistOnly
+                  ? 'bg-cater-red text-white border-cater-red shadow-md'
+                  : 'bg-white text-cater-red border-slate-200 hover:border-cater-red hover:bg-red-50'
+              }`}
+            >
+              <Heart size={16} fill={showWishlistOnly ? "currentColor" : "none"} />
+              My Wishlist
+              <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs ${showWishlistOnly ? 'bg-white text-cater-red' : 'bg-cater-red text-white'}`}>
+                {wishlist.length}
+              </span>
+            </button>
+
+            {!showWishlistOnly && (
+              <div className="inline-flex flex-wrap justify-center gap-2 p-1 bg-white border border-slate-200 rounded-full shadow-sm">
+                  {categories.map(cat => (
+                      <button
+                          key={cat}
+                          onClick={() => handleCategoryChange(cat)}
+                          className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
+                              activeCategory === cat 
+                                  ? 'bg-cater-blue text-white shadow-md' 
+                                  : 'text-slate-500 hover:text-cater-blue hover:bg-slate-50'
+                          }`}
+                      >
+                          {cat}
+                      </button>
+                  ))}
+              </div>
+            )}
         </div>
 
-        {/* Equipment Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 min-h-[500px]">
-            {currentItems.map(item => (
-                <div 
-                    key={item.id} 
-                    className="group bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1 h-full flex flex-col"
-                >
-                    {/* Image Area */}
-                    <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
-                        <img 
-                            src={item.image} 
-                            alt={item.name} 
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        />
-                        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-cater-blue shadow-sm">
-                            {item.category}
-                        </div>
-                    </div>
-
-                    {/* Content */}
+        {/* Loading Skeleton */}
+        {isLoading ? (
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 min-h-[500px]">
+              {Array.from({ length: 8 }).map((_, i) => (
+                 <div key={i} className="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm h-full flex flex-col">
+                    <div className="relative aspect-[4/3] bg-slate-200 animate-pulse" />
                     <div className="p-6 flex-1 flex flex-col">
-                        <div className="mb-4 flex-1">
-                            <h4 className="text-lg font-serif font-bold text-slate-900 group-hover:text-cater-blue transition-colors mb-1 truncate">
-                                {item.name}
-                            </h4>
-                            <p className="text-xs font-medium text-slate-400">
-                                {item.specs}
-                            </p>
-                        </div>
-
-                        <div className="flex items-center justify-between pt-4 border-t border-slate-50 mt-auto">
-                            <span className="text-sm font-bold text-slate-500">
-                                Rent Now
-                            </span>
-                            <button className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-cater-red group-hover:text-white transition-all duration-300">
-                                <ArrowRight size={14} />
-                            </button>
-                        </div>
+                       <div className="h-6 bg-slate-200 rounded animate-pulse mb-3 w-3/4" />
+                       <div className="h-4 bg-slate-100 rounded animate-pulse w-1/2 mb-auto" />
+                       <div className="mt-8 pt-4 border-t border-slate-50 flex justify-between items-center">
+                          <div className="h-4 bg-slate-200 rounded animate-pulse w-1/3" />
+                          <div className="w-8 h-8 rounded-full bg-slate-200 animate-pulse" />
+                       </div>
                     </div>
-                </div>
-            ))}
-        </div>
+                 </div>
+              ))}
+           </div>
+        ) : (
+          <>
+            {/* Empty Wishlist State */}
+            {showWishlistOnly && filteredItems.length === 0 && (
+              <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 border-dashed animate-slide-up">
+                  <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Heart size={32} className="text-slate-300" />
+                  </div>
+                  <h4 className="text-xl font-serif font-bold text-slate-700 mb-2">Your wishlist is empty</h4>
+                  <p className="text-slate-400 mb-8 max-w-sm mx-auto">Start exploring our inventory and save items here to request a consolidated quote.</p>
+                  <button 
+                    onClick={() => handleWishlistToggleView()}
+                    className="px-8 py-3 bg-cater-blue text-white font-bold rounded-lg hover:bg-cater-blue-900 transition-colors"
+                  >
+                    Browse Inventory
+                  </button>
+              </div>
+            )}
 
-        {/* Pagination Controls */}
-        {filteredItems.length > 0 && (
-          <div className="flex items-center justify-center gap-4 mt-12">
-            <button 
-              onClick={handlePrevPage}
-              disabled={currentPage === 1}
-              className="p-3 rounded-full bg-white border border-slate-200 text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 hover:text-cater-blue transition-colors shadow-sm"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <span className="text-sm font-bold text-slate-500">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button 
-              onClick={handleNextPage}
-              disabled={currentPage === totalPages}
-              className="p-3 rounded-full bg-white border border-slate-200 text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 hover:text-cater-blue transition-colors shadow-sm"
-            >
-              <ChevronRight size={20} />
-            </button>
-          </div>
+            {/* Equipment Grid */}
+            {filteredItems.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 min-h-[500px] animate-slide-up">
+                  {currentItems.map(item => {
+                      const isWishlisted = wishlist.includes(item.id);
+                      return (
+                        <div 
+                            key={item.id} 
+                            className="group bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1 h-full flex flex-col relative"
+                        >
+                            {/* Image Area */}
+                            <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                                <img 
+                                    src={item.image} 
+                                    alt={item.name} 
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                />
+                                
+                                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-cater-blue shadow-sm z-10">
+                                    {item.category}
+                                </div>
+
+                                {/* Wishlist Toggle Button */}
+                                <button
+                                    onClick={(e) => toggleWishlist(e, item.id)}
+                                    className={`absolute top-3 right-3 p-2 rounded-full z-10 transition-all duration-300 shadow-sm ${
+                                      isWishlisted 
+                                        ? 'bg-cater-red text-white' 
+                                        : 'bg-white/90 text-slate-400 hover:text-cater-red hover:bg-white'
+                                    }`}
+                                >
+                                    <Heart size={16} fill={isWishlisted ? "currentColor" : "none"} />
+                                </button>
+                            </div>
+
+                            {/* Content */}
+                            <div className="p-6 flex-1 flex flex-col">
+                                <div className="mb-4 flex-1">
+                                    <h4 className="text-lg font-serif font-bold text-slate-900 group-hover:text-cater-blue transition-colors mb-1 truncate">
+                                        {item.name}
+                                    </h4>
+                                    <p className="text-xs font-medium text-slate-400">
+                                        {item.specs}
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center justify-between pt-4 border-t border-slate-50 mt-auto">
+                                    <span className="text-sm font-bold text-slate-500">
+                                        Rent Now
+                                    </span>
+                                    <button className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-cater-red group-hover:text-white transition-all duration-300">
+                                        <ArrowRight size={14} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                      );
+                  })}
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {filteredItems.length > 0 && (
+              <div className="flex items-center justify-center gap-4 mt-12 animate-fade-in">
+                <button 
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                  className="p-3 rounded-full bg-white border border-slate-200 text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 hover:text-cater-blue transition-colors shadow-sm"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <span className="text-sm font-bold text-slate-500">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button 
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className="p-3 rounded-full bg-white border border-slate-200 text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 hover:text-cater-blue transition-colors shadow-sm"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         {/* Request Catalog Button */}
@@ -224,7 +350,7 @@ const Equipments: React.FC = () => {
                 className="inline-flex items-center gap-2 px-8 py-3 bg-white border border-slate-200 text-cater-blue font-bold rounded-lg hover:bg-cater-blue hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg"
             >
                 <ShoppingBag size={18} />
-                Request Full Catalog
+                {showWishlistOnly && wishlist.length > 0 ? "Request Quote for Wishlist" : "Request Full Catalog"}
             </button>
         </div>
 
@@ -242,8 +368,14 @@ const Equipments: React.FC = () => {
             {/* Header */}
             <div className="bg-cater-blue p-6 flex justify-between items-start">
               <div>
-                <h3 className="text-xl font-serif font-bold text-white mb-1">Request Full Catalog</h3>
-                <p className="text-cater-gray/80 text-sm">We'll send our complete inventory list to you.</p>
+                <h3 className="text-xl font-serif font-bold text-white mb-1">
+                   {showWishlistOnly && wishlist.length > 0 ? "Request Wishlist Quote" : "Request Full Catalog"}
+                </h3>
+                <p className="text-cater-gray/80 text-sm">
+                   {showWishlistOnly && wishlist.length > 0 
+                    ? `Inquiring about ${wishlist.length} selected items.`
+                    : "We'll send our complete inventory list to you."}
+                </p>
               </div>
               <button 
                 onClick={() => setIsModalOpen(false)}
@@ -262,7 +394,7 @@ const Equipments: React.FC = () => {
                   </div>
                   <h4 className="text-xl font-bold text-slate-800 mb-2">Request Sent!</h4>
                   <p className="text-slate-500">
-                    Thank you. We will contact you on WhatsApp shortly with the full catalog.
+                    Thank you. We will contact you on WhatsApp shortly.
                   </p>
                 </div>
               ) : (
@@ -306,7 +438,8 @@ const Equipments: React.FC = () => {
                       </div>
                       <textarea 
                         rows={3}
-                        placeholder="e.g., I need 200 gold chairs and round tables..."
+                        placeholder={showWishlistOnly ? "I need these items for a wedding on 25th Dec..." : "e.g., I need 200 gold chairs and round tables..."}
+                        defaultValue={showWishlistOnly && wishlist.length > 0 ? `I am interested in ${wishlist.length} items from my wishlist: ${filteredItems.map(i => i.name).join(', ')}` : ""}
                         className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-cater-blue/20 focus:border-cater-blue outline-none transition-all text-slate-800 text-sm resize-none"
                       ></textarea>
                     </div>

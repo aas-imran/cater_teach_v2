@@ -21,6 +21,8 @@ const Gallery: React.FC = () => {
     ? galleryItems 
     : galleryItems.filter(item => item.type === filter);
 
+  const visibleItems = filteredItems.slice(0, 8);
+
   const filters = ['All', 'Event', 'Food', 'Equipment', 'Furniture'];
 
   return (
@@ -53,7 +55,7 @@ const Gallery: React.FC = () => {
 
         {/* Masonry Grid */}
         <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
-          {filteredItems.map((item) => (
+          {visibleItems.map((item) => (
             <div 
               key={item.id} 
               className="break-inside-avoid relative group rounded-2xl overflow-hidden cursor-pointer"

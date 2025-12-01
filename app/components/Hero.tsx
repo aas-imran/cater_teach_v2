@@ -38,27 +38,27 @@ const Hero: React.FC = () => {
       ))}
 
       {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:text-left pt-20 h-full flex flex-col justify-center">
-        <div className="max-w-4xl">
-          <div className="flex items-center gap-3 mb-6 animate-fade-in justify-center sm:justify-start">
-             <div className="flex text-cater-red">
-                {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
-             </div>
-             <span className="text-white/80 font-medium tracking-wide text-sm">
-                PREMIER EVENT SOLUTIONS IN UAE
-             </span>
-          </div>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left pt-20    h-full flex flex-col justify-center items-start">
+         <div className="max-w-4xl mr-0 sm:mr-8 md:mr-16 lg:mr-32 xl:mr-80">
+            <div className="flex items-center gap-3 mb-6 animate-fade-in justify-start">
+              <div className="flex text-cater-red">
+                 {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
+              </div>
+              <span className="text-white/80 font-medium tracking-wide text-sm">
+                 PREMIER EVENT SOLUTIONS IN UAE
+              </span>
+           </div>
 
-          <h1 className="text-5xl sm:text-6xl md:text-8xl font-serif font-bold text-white leading-[1.1] mb-8 shadow-sm">
-            Crafting <span className="text-transparent bg-clip-text bg-gradient-to-r from-cater-red to-orange-500">Unforgettable</span> <br/>
-            Experiences.
-          </h1>
+           <h1 className="text-5xl sm:text-6xl md:text-8xl font-serif font-bold text-white leading-[1.1] mb-8 shadow-sm">
+             Crafting <span className="text-transparent bg-clip-text bg-gradient-to-r from-cater-red to-orange-500">Unforgettable</span> <br/>
+             Experiences.
+           </h1>
           
           <p className="text-lg sm:text-xl text-slate-100 mb-10 max-w-2xl font-light leading-relaxed">
             From corporate galas to intimate gatherings, CaterTech provides world-class catering, event management, and premium equipment rentals tailored to your vision.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-5 justify-center sm:justify-start">
+          <div className="flex flex-col sm:flex-row gap-5 justify-start">
             <a 
               href="#services"
               className="px-10 py-5 bg-cater-red hover:bg-red-700 text-white rounded-md font-bold text-lg transition-all transform hover:-translate-y-1 shadow-xl hover:shadow-2xl flex items-center justify-center gap-3 group"

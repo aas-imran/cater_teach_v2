@@ -19,3 +19,14 @@ export enum ServiceCategory {
   RENTAL = 'Rental',
   STAFFING = 'Staffing'
 }
+export interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  date: string;
+  readTime: string;
+  author: string;
+  category: string;
+  imageUrl: string;
+}

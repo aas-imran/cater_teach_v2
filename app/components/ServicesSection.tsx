@@ -78,7 +78,7 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({ onServiceClick }) => 
                 <div className="absolute inset-0 p-8 flex flex-col justify-between z-20">
                     <div className="flex justify-between items-start">
                         {/* Icon */}
-                        <div className="p-3 glass-card rounded-2xl text-cater-blue group-hover:bg-cater-red group-hover:text-white transition-all duration-300 transform group-hover:scale-110 shadow-lg">
+                        <div className="p-3 glass-card rounded-2xl text-cater-blue group-hover:text-cater-red transition-all duration-300 transform group-hover:scale-110 shadow-lg">
                            <Icon size={28} strokeWidth={1.5} />
                          </div>
                         <span className="text-white/20 text-5xl font-serif font-bold group-hover:text-white/40 transition-colors duration-500 select-none">

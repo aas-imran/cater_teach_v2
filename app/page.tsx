@@ -12,6 +12,8 @@ import Gallery from "./components/Gallery";
 import AIConsultant from "./components/AIConsultant";
 import ContactFooter from "./components/ContactFooter";
 import { ServiceItem } from "@/types";
+import Testimoanial from "./components/testimoanial";
+import BlogsSections from "./components/BlogsSections";
 
 export default function Home() {
   const router = useRouter();
@@ -41,6 +43,8 @@ export default function Home() {
       <Equipments />
       <Gallery />
       <AIConsultant />
+      <Testimoanial />
+      <BlogsSections />
       <ContactFooter />
     </div>
   );
